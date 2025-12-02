@@ -6,6 +6,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:pasteboard/pasteboard.dart';
 import 'package:path_provider/path_provider.dart';
 import '../services/x_service.dart';
+import '../services/history_service.dart';
+import '../models/message.dart';
 import 'setup_screen.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -15,28 +17,36 @@ class ChatScreen extends StatefulWidget {
   State<ChatScreen> createState() => _ChatScreenState();
 }
 
-class Message {
-  final String text;
-  final DateTime timestamp;
-  bool isSent;
-  bool isError;
 
-  Message({
-    required this.text,
-    required this.timestamp,
-    this.isSent = false,
-    this.isError = false,
-  });
-}
 
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _controller = TextEditingController();
-  final List<Message> _messages = [];
+  List<Message> _messages = [];
   final XService _xService = XService();
+  final HistoryService _historyService = HistoryService();
   final ScrollController _scrollController = ScrollController();
   final List<File> _selectedMedia = [];
   final ImagePicker _picker = ImagePicker();
   bool _isUploading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadHistory();
+  }
+
+  Future<void> _loadHistory() async {
+    final messages = await _historyService.loadMessages();
+    setState(() {
+      _messages = messages;
+    });
+    // Scroll to bottom after loading
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+      }
+    });
+  }
 
   Future<void> _pickImage(ImageSource source) async {
     try {
@@ -87,20 +97,23 @@ class _ChatScreenState extends State<ChatScreen> {
       text: text,
       timestamp: DateTime.now(),
       isSent: false,
+      imagePaths: _selectedMedia.map((f) => f.path).toList(),
     );
 
     setState(() {
       _messages.add(newMessage);
       _controller.clear();
+      _selectedMedia.clear(); // Clear immediately from UI input, but kept in message
     });
     
     _scrollToBottom();
+    _historyService.saveMessages(_messages);
 
     try {
       List<String> mediaIds = [];
-      if (_selectedMedia.isNotEmpty) {
-        for (var file in _selectedMedia) {
-          final id = await _xService.uploadMedia(file);
+      if (newMessage.imagePaths.isNotEmpty) {
+        for (var path in newMessage.imagePaths) {
+          final id = await _xService.uploadMedia(File(path));
           mediaIds.add(id);
         }
       }
@@ -109,12 +122,13 @@ class _ChatScreenState extends State<ChatScreen> {
       
       setState(() {
         newMessage.isSent = true;
-        _selectedMedia.clear();
       });
+      _historyService.saveMessages(_messages);
     } catch (e) {
       setState(() {
         newMessage.isError = true;
       });
+      _historyService.saveMessages(_messages);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to post: $e')),
@@ -173,10 +187,26 @@ class _ChatScreenState extends State<ChatScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Text(
-                            msg.text,
-                            style: const TextStyle(fontSize: 16, color: Colors.white),
-                          ),
+                          if (msg.imagePaths.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 8.0),
+                              child: Column(
+                                children: msg.imagePaths.map((path) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 4.0),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Image.file(File(path), height: 150, fit: BoxFit.cover),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                          if (msg.text.isNotEmpty)
+                            Text(
+                              msg.text,
+                              style: const TextStyle(fontSize: 16, color: Colors.white),
+                            ),
                           const SizedBox(height: 4),
                           Row(
                             mainAxisSize: MainAxisSize.min,
