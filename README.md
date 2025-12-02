@@ -3,6 +3,14 @@
 A "Write-Only" X (Twitter) client that reimagines posting as a private chat with your homies.
 Built with Flutter.
 
+## Inspiration
+![Treating this app like a group chat is the way to go I think](assets/images/inspiration.png)
+
+> "Treating this app like a group chat is the way to go I think"
+> — [@levelsio](https://twitter.com/levelsio/status/1992210699846877646)
+
+Inspired by the idea that posting to X should feel as low-friction as a group chat.
+
 ## Features
 -   **Chat Interface**: Posting a tweet feels like sending a message in a group chat.
 -   **Double Tick**: Blue tick confirms the tweet was successfully posted.
