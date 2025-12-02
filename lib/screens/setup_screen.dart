@@ -19,6 +19,37 @@ class _SetupScreenState extends State<SetupScreen> {
   final _accessTokenSecretController = TextEditingController();
 
   bool _isLoading = false;
+  bool _isEditing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadKeys();
+  }
+
+  Future<void> _loadKeys() async {
+    setState(() => _isLoading = true);
+    try {
+      final consumerKey = await _storage.read(key: 'CONSUMER_KEY');
+      final consumerSecret = await _storage.read(key: 'CONSUMER_SECRET');
+      final accessToken = await _storage.read(key: 'ACCESS_TOKEN');
+      final accessTokenSecret = await _storage.read(key: 'ACCESS_TOKEN_SECRET');
+
+      if (consumerKey != null && consumerKey.isNotEmpty) {
+        setState(() {
+          _consumerKeyController.text = consumerKey;
+          _consumerSecretController.text = consumerSecret ?? '';
+          _accessTokenController.text = accessToken ?? '';
+          _accessTokenSecretController.text = accessTokenSecret ?? '';
+          _isEditing = true;
+        });
+      }
+    } catch (e) {
+      // Ignore errors during load
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   Future<void> _saveKeys() async {
     if (!_formKey.currentState!.validate()) return;
@@ -32,9 +63,13 @@ class _SetupScreenState extends State<SetupScreen> {
       await _storage.write(key: 'ACCESS_TOKEN_SECRET', value: _accessTokenSecretController.text.trim());
 
       if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const ChatScreen()),
-        );
+        if (_isEditing) {
+          Navigator.of(context).pop();
+        } else {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const ChatScreen()),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -50,7 +85,7 @@ class _SetupScreenState extends State<SetupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Setup x-chat')),
+      appBar: AppBar(title: Text(_isEditing ? 'Settings' : 'Setup x-chat')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -63,7 +98,7 @@ class _SetupScreenState extends State<SetupScreen> {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Keys are stored securely if possible, or locally if not.',
+                'Keys are stored securely in your device\'s keystore.',
                 style: TextStyle(color: Colors.grey),
               ),
               const SizedBox(height: 20),
@@ -79,7 +114,7 @@ class _SetupScreenState extends State<SetupScreen> {
                 ),
                 child: _isLoading
                     ? const CircularProgressIndicator()
-                    : const Text('Save & Continue'),
+                    : Text(_isEditing ? 'Save Changes' : 'Save & Continue'),
               ),
             ],
           ),

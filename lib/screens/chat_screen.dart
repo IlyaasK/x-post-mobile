@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:pasteboard/pasteboard.dart';
 import 'package:path_provider/path_provider.dart';
 import '../services/x_service.dart';
+import 'setup_screen.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -142,6 +143,16 @@ class _ChatScreenState extends State<ChatScreen> {
       appBar: AppBar(
         title: const Text('x-chat'),
         backgroundColor: const Color(0xFF1E1E1E),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const SetupScreen()),
+              );
+            },
+          ),
+        ],
       ),
       body: Container(
         color: const Color(0xFF121212), // Signal Dark BG
