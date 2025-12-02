@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:pasteboard/pasteboard.dart';
 import 'package:path_provider/path_provider.dart';
 import '../services/x_service.dart';
+import '../services/storage_service.dart';
 import '../services/history_service.dart';
 import '../models/message.dart';
 import 'setup_screen.dart';
@@ -28,11 +29,21 @@ class _ChatScreenState extends State<ChatScreen> {
   final List<File> _selectedMedia = [];
   final ImagePicker _picker = ImagePicker();
   bool _isUploading = false;
+  bool _enableReplies = false;
+  final StorageService _storage = StorageService();
 
   @override
   void initState() {
     super.initState();
+    _loadSettings();
     _loadHistory();
+  }
+
+  Future<void> _loadSettings() async {
+    final enableReplies = await _storage.read(key: 'ENABLE_REPLIES');
+    setState(() {
+      _enableReplies = enableReplies == 'true';
+    });
   }
 
   Future<void> _loadHistory() async {
@@ -118,12 +129,17 @@ class _ChatScreenState extends State<ChatScreen> {
         }
       }
 
-      await _xService.postTweet(text, mediaIds: mediaIds);
+      final tweet = await _xService.postTweet(text, mediaIds: mediaIds);
       
       setState(() {
         newMessage.isSent = true;
+        // newMessage.tweetId = tweet.id; // Message is final, need to handle this better or just ignore for now
       });
       _historyService.saveMessages(_messages);
+
+      if (_enableReplies && tweet.id.isNotEmpty) {
+        _fetchReplies(newMessage, tweet.id);
+      }
     } catch (e) {
       setState(() {
         newMessage.isError = true;
@@ -136,6 +152,26 @@ class _ChatScreenState extends State<ChatScreen> {
       }
     } finally {
       if (mounted) setState(() => _isUploading = false);
+    }
+  }
+
+  Future<void> _fetchReplies(Message message, String tweetId) async {
+    try {
+      final repliesData = await _xService.getReplies(tweetId);
+      if (repliesData.isNotEmpty) {
+        final replies = repliesData.map((data) => Message(
+          text: data.text,
+          timestamp: data.createdAt ?? DateTime.now(),
+          isSent: true, // Incoming reply
+        )).toList();
+
+        setState(() {
+          message.replies.addAll(replies);
+        });
+        _historyService.saveMessages(_messages);
+      }
+    } catch (e) {
+      print('Error fetching replies: $e');
     }
   }
 
@@ -206,6 +242,24 @@ class _ChatScreenState extends State<ChatScreen> {
                             Text(
                               msg.text,
                               style: const TextStyle(fontSize: 16, color: Colors.white),
+                            ),
+                          if (msg.replies.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Divider(color: Colors.white24),
+                                  const Text('Replies:', style: TextStyle(fontSize: 12, color: Colors.white70)),
+                                  ...msg.replies.map((reply) => Padding(
+                                    padding: const EdgeInsets.only(top: 4.0),
+                                    child: Text(
+                                      reply.text,
+                                      style: const TextStyle(fontSize: 14, color: Colors.white),
+                                    ),
+                                  )),
+                                ],
+                              ),
                             ),
                           const SizedBox(height: 4),
                           Row(

@@ -3,6 +3,8 @@ class Message {
   final DateTime timestamp;
   bool isSent;
   bool isError;
+  final String? tweetId;
+  final List<Message> replies;
   final List<String> imagePaths;
 
   Message({
@@ -11,6 +13,8 @@ class Message {
     this.isSent = false,
     this.isError = false,
     this.imagePaths = const [],
+    this.tweetId,
+    this.replies = const [],
   });
 
   Map<String, dynamic> toJson() {
@@ -20,6 +24,8 @@ class Message {
       'isSent': isSent,
       'isError': isError,
       'imagePaths': imagePaths,
+      'tweetId': tweetId,
+      'replies': replies.map((r) => r.toJson()).toList(),
     };
   }
 
@@ -30,6 +36,11 @@ class Message {
       isSent: json['isSent'] ?? false,
       isError: json['isError'] ?? false,
       imagePaths: List<String>.from(json['imagePaths'] ?? []),
+      tweetId: json['tweetId'],
+      replies: (json['replies'] as List<dynamic>?)
+              ?.map((r) => Message.fromJson(r))
+              .toList() ??
+          [],
     );
   }
 }

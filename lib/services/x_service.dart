@@ -61,4 +61,21 @@ class XService {
       rethrow;
     }
   }
+  Future<List<TweetData>> getReplies(String tweetId) async {
+    if (_twitterApi == null) await init();
+
+    try {
+      final response = await _twitterApi!.tweets.searchRecent(
+        query: 'conversation_id:$tweetId',
+        tweetFields: [
+          TweetField.createdAt,
+          TweetField.authorId,
+        ],
+      );
+      return response.data;
+    } catch (e) {
+      print('Error fetching replies: $e');
+      return [];
+    }
+  }
 }

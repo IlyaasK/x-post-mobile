@@ -20,6 +20,7 @@ class _SetupScreenState extends State<SetupScreen> {
 
   bool _isLoading = false;
   bool _isEditing = false;
+  bool _enableReplies = false;
 
   @override
   void initState() {
@@ -34,6 +35,7 @@ class _SetupScreenState extends State<SetupScreen> {
       final consumerSecret = await _storage.read(key: 'CONSUMER_SECRET');
       final accessToken = await _storage.read(key: 'ACCESS_TOKEN');
       final accessTokenSecret = await _storage.read(key: 'ACCESS_TOKEN_SECRET');
+      final enableReplies = await _storage.read(key: 'ENABLE_REPLIES');
 
       if (consumerKey != null && consumerKey.isNotEmpty) {
         setState(() {
@@ -41,6 +43,7 @@ class _SetupScreenState extends State<SetupScreen> {
           _consumerSecretController.text = consumerSecret ?? '';
           _accessTokenController.text = accessToken ?? '';
           _accessTokenSecretController.text = accessTokenSecret ?? '';
+          _enableReplies = enableReplies == 'true';
           _isEditing = true;
         });
       }
@@ -60,7 +63,9 @@ class _SetupScreenState extends State<SetupScreen> {
       await _storage.write(key: 'CONSUMER_KEY', value: _consumerKeyController.text.trim());
       await _storage.write(key: 'CONSUMER_SECRET', value: _consumerSecretController.text.trim());
       await _storage.write(key: 'ACCESS_TOKEN', value: _accessTokenController.text.trim());
+      await _storage.write(key: 'ACCESS_TOKEN', value: _accessTokenController.text.trim());
       await _storage.write(key: 'ACCESS_TOKEN_SECRET', value: _accessTokenSecretController.text.trim());
+      await _storage.write(key: 'ENABLE_REPLIES', value: _enableReplies.toString());
 
       if (mounted) {
         if (_isEditing) {
@@ -106,6 +111,13 @@ class _SetupScreenState extends State<SetupScreen> {
               _buildTextField('Consumer Secret', _consumerSecretController, obscure: true),
               _buildTextField('Access Token', _accessTokenController),
               _buildTextField('Access Token Secret', _accessTokenSecretController, obscure: true),
+              const SizedBox(height: 20),
+              SwitchListTile(
+                title: const Text('Enable Replies (Paid API)'),
+                subtitle: const Text('Requires Basic tier or higher (\$100/mo)'),
+                value: _enableReplies,
+                onChanged: (value) => setState(() => _enableReplies = value),
+              ),
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _isLoading ? null : _saveKeys,
