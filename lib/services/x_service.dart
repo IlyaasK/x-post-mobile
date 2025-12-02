@@ -1,6 +1,8 @@
 import 'package:twitter_api_v2/twitter_api_v2.dart';
 import 'storage_service.dart';
 
+import 'dart:io';
+
 class XService {
   TwitterApi? _twitterApi;
   final _storage = StorageService();
@@ -29,7 +31,20 @@ class XService {
     );
   }
 
-  Future<TweetData> postTweet(String text) async {
+  Future<String> uploadMedia(File file) async {
+    if (_twitterApi == null) await init();
+    
+    try {
+      final media = await _twitterApi!.media.uploadMedia(
+        file: file,
+      );
+      return media.data.id;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<TweetData> postTweet(String text, {List<String>? mediaIds}) async {
     if (_twitterApi == null) {
       await init();
     }
@@ -37,6 +52,9 @@ class XService {
     try {
       final response = await _twitterApi!.tweets.createTweet(
         text: text,
+        media: mediaIds != null && mediaIds.isNotEmpty
+            ? TweetMediaParam(mediaIds: mediaIds)
+            : null,
       );
       return response.data;
     } catch (e) {
