@@ -34,8 +34,6 @@ Builds:
     sudo:
       - apt-get update || apt-get update
       - apt-get install -y openjdk-17-jdk-headless
-    gradle:
-      - yes
     output: build/app/outputs/flutter-apk/app-release.apk
     srclibs:
       - flutter@3.19.0
