@@ -1,0 +1,8 @@
+x-post-mobile is a lightweight, open-source mobile client for X (formerly Twitter) designed for simplicity and privacy.
+
+Key Features:
+* Group Chat Vibe: Tweet like you're in a group chat with the homies.
+* Distraction Free: A "write-only" interface where you don't see others' tweets, keeping you focused.
+* Thread Support: Easily create threads by replying to your own tweets.
+* Privacy Focused: Your API keys are stored locally on your device.
+* Open Source: Fully open source and transparent.
