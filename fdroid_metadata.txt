@@ -1,0 +1,29 @@
+# F-Droid Metadata Suggestions
+
+## Summary
+A minimal, privacy-focused X (Twitter) client for posting and self-threading.
+
+## Description
+x-post-mobile is a lightweight, open-source mobile client for X (formerly Twitter) designed for simplicity and privacy. It focuses on the core experience of posting tweets and creating threads by replying to yourself.
+
+**Features:**
+*   **Post Tweets:** Send text and image tweets directly to X.
+*   **Thread Support:** Easily create threads by replying to your own tweets with a long-press action.
+*   **Privacy Focused:** Your API keys are stored locally on your device.
+*   **Open Source:** Fully open source and transparent.
+
+## Categories
+*   Social
+*   Internet
+
+## License
+GPL-3.0-only
+
+## Source Code
+https://github.com/IlyaasK/x-post-mobile
+
+## Issue Tracker
+https://github.com/IlyaasK/x-post-mobile/issues
+
+## Changelog
+https://github.com/IlyaasK/x-post-mobile/releases
