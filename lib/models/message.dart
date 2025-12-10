@@ -4,6 +4,8 @@ class Message {
   bool isSent;
   bool isError;
   String? tweetId;
+  final String? replyToTweetId;
+  final String? replyToText;
   final List<Message> replies;
   final List<String> imagePaths;
 
@@ -15,6 +17,8 @@ class Message {
     this.imagePaths = const [],
     this.tweetId,
     this.replies = const [],
+    this.replyToTweetId,
+    this.replyToText,
   });
 
   Map<String, dynamic> toJson() {
@@ -25,6 +29,8 @@ class Message {
       'isError': isError,
       'imagePaths': imagePaths,
       'tweetId': tweetId,
+      'replyToTweetId': replyToTweetId,
+      'replyToText': replyToText,
       'replies': replies.map((r) => r.toJson()).toList(),
     };
   }
@@ -37,6 +43,8 @@ class Message {
       isError: json['isError'] ?? false,
       imagePaths: List<String>.from(json['imagePaths'] ?? []),
       tweetId: json['tweetId'],
+      replyToTweetId: json['replyToTweetId'],
+      replyToText: json['replyToText'],
       replies: (json['replies'] as List<dynamic>?)
               ?.map((r) => Message.fromJson(r))
               .toList() ??

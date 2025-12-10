@@ -110,6 +110,8 @@ class _ChatScreenState extends State<ChatScreen> {
       timestamp: DateTime.now(),
       isSent: false,
       imagePaths: _selectedMedia.map((f) => f.path).toList(),
+      replyToTweetId: _replyToMessage?.tweetId,
+      replyToText: _replyToMessage?.text,
     );
 
     setState(() {
@@ -252,9 +254,27 @@ class _ChatScreenState extends State<ChatScreen> {
                         nip: BubbleNip.rightTop,
                         color: const Color(0xFF2C6BED), // Signal Blue
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            if (msg.imagePaths.isNotEmpty)
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          if (msg.replyToText != null)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 4.0),
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: Colors.black12,
+                                  borderRadius: BorderRadius.circular(4),
+                                  border: Border(left: BorderSide(color: Colors.white70, width: 2)),
+                                ),
+                                child: Text(
+                                  'Replying to: ${msg.replyToText}',
+                                  style: const TextStyle(fontSize: 12, color: Colors.white70, fontStyle: FontStyle.italic),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ),
+                          if (msg.imagePaths.isNotEmpty)
                               Padding(
                                 padding: const EdgeInsets.only(bottom: 8.0),
                                 child: Column(
