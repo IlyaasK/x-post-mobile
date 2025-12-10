@@ -11,9 +11,10 @@ Built with Flutter.
 
 Inspired by the idea that posting to X should feel as low-friction as a group chat.
 
-## Features
--   **Chat Interface**: Posting a tweet feels like sending a message in a group chat.
--   **Double Tick**: Blue tick confirms the tweet was successfully posted.
+## Key Features
+-   **Group Chat Vibe**: Tweet like you're in a group chat with the homies.
+-   **Distraction Free**: A "write-only" interface where you don't see others' tweets, keeping you focused.
+-   **Thread Support**: Easily create threads by replying to your own tweets.
 -   **Secure Storage**: API keys are stored in the system's secure keystore (Android Keystore / Linux Keyring).
 -   **Dark Mode**: Signal-like dark theme.
 
