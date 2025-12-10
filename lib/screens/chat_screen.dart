@@ -138,7 +138,7 @@ class _ChatScreenState extends State<ChatScreen> {
       
       setState(() {
         newMessage.isSent = true;
-        // newMessage.tweetId = tweet.id; // Message is final, need to handle this better or just ignore for now
+        newMessage.tweetId = tweet.id;
         _replyToMessage = null;
       });
       _historyService.saveMessages(_messages);

@@ -3,7 +3,7 @@ class Message {
   final DateTime timestamp;
   bool isSent;
   bool isError;
-  final String? tweetId;
+  String? tweetId;
   final List<Message> replies;
   final List<String> imagePaths;
 
