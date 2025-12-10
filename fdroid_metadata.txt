@@ -3,15 +3,61 @@
 ## Summary
 A minimal, privacy-focused X (Twitter) client for posting and self-threading.
 
-## Description
-x-post-mobile is a lightweight, open-source mobile client for X (formerly Twitter) designed for simplicity and privacy.
+## Categories:
+  - Social
+  - Internet
+License: GPL-3.0-only
+SourceCode: https://github.com/IlyaasK/x-post-mobile
+IssueTracker: https://github.com/IlyaasK/x-post-mobile/issues
+Changelog: https://github.com/IlyaasK/x-post-mobile/releases
 
-**Key Features:**
-*   **Group Chat Vibe:** Tweet like you're in a group chat with the homies.
-*   **Distraction Free:** A "write-only" interface where you don't see others' tweets, keeping you focused.
-*   **Thread Support:** Easily create threads by replying to your own tweets.
-*   **Privacy Focused:** Your API keys are stored locally on your device.
-*   **Open Source:** Fully open source and transparent.
+AutoName: x-post-mobile
+Summary: A minimal, privacy-focused X (Twitter) client.
+Description: |
+    x-post-mobile is a lightweight, open-source mobile client for X (formerly Twitter) designed for simplicity and privacy.
+
+    Key Features:
+    * Group Chat Vibe: Tweet like you're in a group chat with the homies.
+    * Distraction Free: A "write-only" interface where you don't see others' tweets, keeping you focused.
+    * Thread Support: Easily create threads by replying to your own tweets.
+    * Privacy Focused: Your API keys are stored locally on your device.
+    * Open Source: Fully open source and transparent.
+
+RepoType: git
+Repo: https://github.com/IlyaasK/x-post-mobile
+
+Builds:
+  - versionName: 1.0.0+1
+    versionCode: 1
+    commit: v1.0.0+1
+    subdir: .
+    sudo:
+      - apt-get update || apt-get update
+      - apt-get install -y openjdk-17-jdk-headless
+    gradle:
+      - yes
+    output: build/app/outputs/flutter-apk/app-release.apk
+    srclibs:
+      - flutter@3.19.0
+    rm:
+      - ios
+      - linux
+      - macos
+      - web
+      - windows
+    prebuild:
+      - export PUB_CACHE=$(pwd)/.pub-cache
+      - $$flutter$$/bin/flutter config --no-analytics
+      - $$flutter$$/bin/flutter pub get
+    scandelete:
+      - android/app/upload-keystore.jks
+      - android/key.properties
+
+AutoUpdateMode: Version
+UpdateCheckMode: Tags
+UpdateCheckData: pubspec.yaml|version:\s.+\+(\d+)|.|version:\s(.+)\+
+CurrentVersion: 1.0.0+1
+CurrentVersionCode: 1
 
 ## Categories
 *   Social
