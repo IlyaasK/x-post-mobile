@@ -31,6 +31,7 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _isUploading = false;
   bool _enableReplies = false;
   final StorageService _storage = StorageService();
+  Message? _replyToMessage;
 
   @override
   void initState() {
@@ -129,11 +130,16 @@ class _ChatScreenState extends State<ChatScreen> {
         }
       }
 
-      final tweet = await _xService.postTweet(text, mediaIds: mediaIds);
+      final tweet = await _xService.postTweet(
+        text, 
+        mediaIds: mediaIds,
+        replyToId: _replyToMessage?.tweetId,
+      );
       
       setState(() {
         newMessage.isSent = true;
         // newMessage.tweetId = tweet.id; // Message is final, need to handle this better or just ignore for now
+        _replyToMessage = null;
       });
       _historyService.saveMessages(_messages);
 
@@ -216,74 +222,100 @@ class _ChatScreenState extends State<ChatScreen> {
                   final msg = _messages[index];
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
-                    child: Bubble(
-                      alignment: Alignment.topRight,
-                      nip: BubbleNip.rightTop,
-                      color: const Color(0xFF2C6BED), // Signal Blue
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          if (msg.imagePaths.isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 8.0),
+                    child: GestureDetector(
+                      onLongPress: () {
+                        if (msg.tweetId != null) {
+                          showModalBottomSheet(
+                            context: context,
+                            builder: (context) => SafeArea(
                               child: Column(
-                                children: msg.imagePaths.map((path) {
-                                  return Padding(
-                                    padding: const EdgeInsets.only(bottom: 4.0),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(8),
-                                      child: Image.file(File(path), height: 150, fit: BoxFit.cover),
-                                    ),
-                                  );
-                                }).toList(),
-                              ),
-                            ),
-                          if (msg.text.isNotEmpty)
-                            Text(
-                              msg.text,
-                              style: const TextStyle(fontSize: 16, color: Colors.white),
-                            ),
-                          if (msg.replies.isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 8.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Divider(color: Colors.white24),
-                                  const Text('Replies:', style: TextStyle(fontSize: 12, color: Colors.white70)),
-                                  ...msg.replies.map((reply) => Padding(
-                                    padding: const EdgeInsets.only(top: 4.0),
-                                    child: Text(
-                                      reply.text,
-                                      style: const TextStyle(fontSize: 14, color: Colors.white),
-                                    ),
-                                  )),
+                                  ListTile(
+                                    leading: const Icon(Icons.reply),
+                                    title: const Text('Reply'),
+                                    onTap: () {
+                                      Navigator.pop(context);
+                                      setState(() {
+                                        _replyToMessage = msg;
+                                      });
+                                    },
+                                  ),
                                 ],
                               ),
                             ),
-                          const SizedBox(height: 4),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                DateFormat('HH:mm').format(msg.timestamp),
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.white.withOpacity(0.7),
+                          );
+                        }
+                      },
+                      child: Bubble(
+                        alignment: Alignment.topRight,
+                        nip: BubbleNip.rightTop,
+                        color: const Color(0xFF2C6BED), // Signal Blue
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            if (msg.imagePaths.isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 8.0),
+                                child: Column(
+                                  children: msg.imagePaths.map((path) {
+                                    return Padding(
+                                      padding: const EdgeInsets.only(bottom: 4.0),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: Image.file(File(path), height: 150, fit: BoxFit.cover),
+                                      ),
+                                    );
+                                  }).toList(),
                                 ),
                               ),
-                              const SizedBox(width: 4),
-                              if (msg.isError)
-                                const Icon(Icons.error, size: 16, color: Colors.redAccent)
-                              else
-                                Icon(
-                                  Icons.done_all,
-                                  size: 16,
-                                  color: msg.isSent ? Colors.white : Colors.white54,
+                            if (msg.text.isNotEmpty)
+                              Text(
+                                msg.text,
+                                style: const TextStyle(fontSize: 16, color: Colors.white),
+                              ),
+                            if (msg.replies.isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 8.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Divider(color: Colors.white24),
+                                    const Text('Replies:', style: TextStyle(fontSize: 12, color: Colors.white70)),
+                                    ...msg.replies.map((reply) => Padding(
+                                      padding: const EdgeInsets.only(top: 4.0),
+                                      child: Text(
+                                        reply.text,
+                                        style: const TextStyle(fontSize: 14, color: Colors.white),
+                                      ),
+                                    )),
+                                  ],
                                 ),
-                            ],
-                          ),
-                        ],
+                              ),
+                            const SizedBox(height: 4),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  DateFormat('HH:mm').format(msg.timestamp),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.white.withOpacity(0.7),
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                if (msg.isError)
+                                  const Icon(Icons.error, size: 16, color: Colors.redAccent)
+                                else
+                                  Icon(
+                                    Icons.done_all,
+                                    size: 16,
+                                    color: msg.isSent ? Colors.white : Colors.white54,
+                                  ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   );
@@ -304,6 +336,29 @@ class _ChatScreenState extends State<ChatScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          if (_replyToMessage != null)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              color: const Color(0xFF2C2C2C),
+              child: Row(
+                children: [
+                  const Icon(Icons.reply, size: 16, color: Colors.grey),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Replying to: ${_replyToMessage!.text}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: Colors.grey),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, size: 16, color: Colors.grey),
+                    onPressed: () => setState(() => _replyToMessage = null),
+                  ),
+                ],
+              ),
+            ),
           if (_selectedMedia.isNotEmpty)
             SizedBox(
               height: 100,

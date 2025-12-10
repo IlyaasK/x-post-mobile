@@ -44,7 +44,7 @@ class XService {
     }
   }
 
-  Future<TweetData> postTweet(String text, {List<String>? mediaIds}) async {
+  Future<TweetData> postTweet(String text, {List<String>? mediaIds, String? replyToId}) async {
     if (_twitterApi == null) {
       await init();
     }
@@ -54,6 +54,9 @@ class XService {
         text: text,
         media: mediaIds != null && mediaIds.isNotEmpty
             ? TweetMediaParam(mediaIds: mediaIds)
+            : null,
+        reply: replyToId != null 
+            ? TweetReplyParam(inReplyToTweetId: replyToId) 
             : null,
       );
       return response.data;
